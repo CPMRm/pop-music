@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>我的開源流行音樂播放器</title>
+  <style>
+    body { font-family: sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .card { background: #1e1e1e; padding: 2rem; border-radius: 12px; width: 320px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    input { width: 80%; padding: 8px; border-radius: 4px; border: none; margin-bottom: 12px; }
+    button { padding: 8px 16px; border: none; border-radius: 4px; background: #1db954; color: white; cursor: pointer; }
+    .song-item { margin: 8px 0; cursor: pointer; font-size: 0.9rem; text-align: left; background: #282828; padding: 8px; border-radius: 4px; }
+    audio { width: 100%; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>流行音樂搜尋</h2>
+    <input type="text" id="keyword" placeholder="輸入歌名或歌手（如：周杰倫）">
+    <button onclick="searchMusic()">搜尋</button>
+    <div id="results" style="margin-top: 15px; max-height: 200px; overflow-y: auto;"></div>
+    <audio id="audioPlayer" controls></audio>
+  </div>
+
+  <script>
+    async function searchMusic() {
+      const query = document.getElementById('keyword').value;
+      if(!query) return;
+      const res = await fetch(`https://music-api.he39.cn/search?keywords=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+
+      data.result.songs.slice(0, 5).forEach(song => {
+        const div = document.createElement('div');
+        div.className = 'song-item';
+        div.innerText = `${song.name} - ${song.artists[0].name}`;
+        div.onclick = () => playSong(song.id);
+        resultsDiv.appendChild(div);
+      });
+    }
+
+    function playSong(id) {
+      const player = document.getElementById('audioPlayer');
+      // 指向公用音訊串流接口
+      player.src = `https://music.163.com/song/media/outer/url?id=${id}.mp3`;
+      player.play();
+    }
+  </script>
+</body>
+</html>
